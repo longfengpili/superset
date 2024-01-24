@@ -33,6 +33,7 @@ from superset.sql_parse import (
     has_table_query,
     insert_rls_as_subquery,
     insert_rls_in_predicate,
+    KustoKQLStatement,
     ParsedQuery,
     sanitize_clause,
     SQLQuery,
@@ -1857,13 +1858,13 @@ def test_sqlquery() -> None:
     """
     Test the `SQLQuery` class.
     """
-    query = SQLQuery("SELECT 1; SELECT 2;")
+    query = SQLQuery("SELECT 1; SELECT 2;", "sqlite")
 
     assert len(query.statements) == 2
     assert query.format() == "SELECT\n  1;\nSELECT\n  2"
     assert query.statements[0].format() == "SELECT\n  1"
 
-    query = SQLQuery("SET a=1; SET a=2; SELECT 3;")
+    query = SQLQuery("SET a=1; SET a=2; SELECT 3;", "sqlite")
     assert query.get_settings() == {"a": "2"}
 
 
@@ -1871,7 +1872,10 @@ def test_sqlstatement() -> None:
     """
     Test the `SQLStatement` class.
     """
-    statement = SQLStatement("SELECT * FROM table1 UNION ALL SELECT * FROM table2")
+    statement = SQLStatement(
+        "SELECT * FROM table1 UNION ALL SELECT * FROM table2",
+        "sqlite",
+    )
 
     assert statement.tables == {
         Table(table="table1", schema=None, catalog=None),
@@ -1882,5 +1886,61 @@ def test_sqlstatement() -> None:
         == "SELECT\n  *\nFROM table1\nUNION ALL\nSELECT\n  *\nFROM table2"
     )
 
-    statement = SQLStatement("SET a=1")
+    statement = SQLStatement("SET a=1", "sqlite")
     assert statement.get_settings() == {"a": "1"}
+
+
+def test_kustokqlstatement() -> None:
+    """
+    Test the `KustoKQLStatement` class.
+    """
+    statements = KustoKQLStatement.split_query(
+        """
+let totalPagesPerDay = PageViews
+| summarize by Page, Day = startofday(Timestamp)
+| summarize count() by Day;
+let materializedScope = PageViews
+| summarize by Page, Day = startofday(Timestamp);
+let cachedResult = materialize(materializedScope);
+cachedResult
+| project Page, Day1 = Day
+| join kind = inner
+(
+    cachedResult
+    | project Page, Day2 = Day
+)
+on Page
+| where Day2 > Day1
+| summarize count() by Day1, Day2
+| join kind = inner
+    totalPagesPerDay
+on $left.Day1 == $right.Day
+| project Day1, Day2, Percentage = count_*100.0/count_1
+        """,
+        "kustokql",
+    )
+    assert len(statements) == 4
+
+    statements = KustoKQLStatement.split_query(
+        """
+print program = ```
+  public class Program {
+    public static void Main() {
+      System.Console.WriteLine("Hello!");
+    }
+  }```
+        """,
+        "kustokql",
+    )
+    assert len(statements) == 1
+
+    statements = KustoKQLStatement.split_query(
+        """
+set querytrace;
+Events | take 100
+        """,
+        "kustokql",
+    )
+    assert len(statements) == 2
+    assert statements[0].format() == "set querytrace"
+    assert statements[1].format() == "Events | take 100"

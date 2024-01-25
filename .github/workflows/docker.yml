@@ -41,7 +41,7 @@ jobs:
           DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
-          ./scripts/docker_build_push.sh "" ${{ matrix.target }} ${{ matrix.platform }}
+          ./scripts/docker_build_push.py "" ${{ matrix.target }} ${{ matrix.platform }}
 
 
   ephemeral-docker-build:

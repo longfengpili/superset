@@ -47,4 +47,4 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           GITHUB_RELEASE_TAG_NAME="${{ github.event.release.tag_name }}"
-          ./scripts/docker_build_push.sh "$GITHUB_RELEASE_TAG_NAME" ${{ matrix.target }} ${{ matrix.platform }}
+          ./scripts/docker_build_push.py "$GITHUB_RELEASE_TAG_NAME" ${{ matrix.target }} ${{ matrix.platform }}

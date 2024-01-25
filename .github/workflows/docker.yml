@@ -45,6 +45,11 @@ jobs:
 
 
   ephemeral-docker-build:
+<<<<<<< HEAD
+=======
+    needs: check-secrets
+    if: needs.check-secrets.outputs.has-secrets == 'true'
+>>>>>>> 26c84c0fd5 (rebased)
     name: docker-build
     runs-on: ubuntu-latest
     steps:

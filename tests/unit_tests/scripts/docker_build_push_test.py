@@ -40,11 +40,11 @@ def test_tag_latest_release(tag, target, platform, expected_output, branch):
     ) as subprocess_mock:
         result = BashMock.docker_build_push(tag, target, platform, branch)
 
-        cmd = f'python ./scripts/docker_build_push.py "{tag}" "{target}" "{platform}"'
+        cmd = ["./scripts/docker_build_push.py", tag, target, platform]
         subprocess_mock.assert_called_once_with(
             cmd,
             shell=True,
-            capture_output=True,
+            stdout=subprocess.PIPE,
             text=True,
             env={"TEST_ENV": "true", "GITHUB_REF": f"refs/heads/{branch}"},
         )

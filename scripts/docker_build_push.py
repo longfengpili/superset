@@ -67,12 +67,7 @@ if GITHUB_RELEASE_TAG_NAME:
         or ""
     )
 
-    match = re.search(r"SKIP_TAG=(.*)", output)
-    print("-=" * 30)
-    print(f"output: {output}")
-    print(f"LATEST_TAG: {LATEST_TAG}")
-    print("-=" * 30)
-    if match and match.group(1) == "SKIP_TAG::false":
+    if "SKIP_TAG::false" in output:
         LATEST_TAG = "latest"
 
 if TEST_ENV == "true":

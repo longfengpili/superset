@@ -1,4 +1,4 @@
-import React, { SyntheticEvent } from 'react';
+import React from 'react';
 import { render, screen, waitFor } from 'spec/helpers/testing-library';
 import userEvent from '@testing-library/user-event';
 import { Menu } from 'src/components/Menu';
@@ -7,7 +7,7 @@ import DownloadAsImage from './DownloadAsImage';
 
 jest.mock('src/utils/downloadAsImage', () => ({
   __esModule: true,
-  default: jest.fn(() => (_e: SyntheticEvent) => {}),
+  default: jest.fn(() => {}),
 }));
 
 const createProps = () => ({

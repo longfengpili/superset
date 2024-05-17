@@ -35,7 +35,7 @@ x-superset-volumes: &superset-volumes
 
 x-common-build: &common-build
   context: .
-  dockerfile: Dockerfile_cn
+  dockerfile: Dockerfile_noqq
   target: dev
   cache_from:
     - apache/superset-cache:3.10-slim-bookworm
@@ -92,6 +92,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
       - "github.com:20.205.243.166"
+      - "deb.debian.org:151.101.110.132"
     user: *superset-user
     depends_on: *superset-depends-on
     volumes: *superset-volumes
@@ -106,6 +107,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
       - "github.com:20.205.243.166"
+      - "deb.debian.org:151.101.110.132"
     depends_on:
       - redis
     # Mount everything in superset-websocket into container and
@@ -147,6 +149,7 @@ services:
     volumes: *superset-volumes
     extra_hosts:
       - "github.com:20.205.243.166"
+      - "deb.debian.org:151.101.110.132"
     environment:
       CYPRESS_CONFIG: "${CYPRESS_CONFIG:-}"
     healthcheck:
@@ -158,8 +161,9 @@ services:
       # set this to false if you have perf issues running the npm i; npm run dev in-docker
       # if you do so, you have to run this manually on the host, which should perform better!
       SCARF_ANALYTICS: "${SCARF_ANALYTICS:-}"
+      BUILD_SUPERSET_FRONTEND_IN_DOCKER: false
     container_name: superset_node
-    command: ["/app/docker/docker-frontend-cn.sh"]
+    command: ["/app/docker/docker-frontend.sh"]
     env_file:
       - path: docker/.env # default
         required: true
@@ -185,6 +189,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
       - "github.com:20.205.243.166"
+      - "deb.debian.org:151.101.110.132"
     healthcheck:
       test: ["CMD-SHELL", "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME"]
     # Bump memory limit if processing selenium / thumbnails on superset-worker

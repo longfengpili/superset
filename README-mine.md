@@ -52,11 +52,17 @@ LANGUAGES = {
 }
 ```
 **2. load examples**  
-在hosts增加对应的内容。
++ 在hosts增加对应的内容。
 ```bash
 echo '20.205.243.166 github.com' >> /etc/hosts
 superset load-examples
 ```  
++ docker-compose中添加hosts
+```yaml
+extra_hosts:
+  - "github.com:20.205.243.166"
+  - "deb.debian.org:151.101.110.132"
+```
 
 **3. trino 数据库连接**
 + 安装trino库
@@ -127,5 +133,4 @@ npm ERR! ENOTEMPTY: directory not empty, rename '/app/superset-frontend/plugins/
 **6. 批量删除node_modules**
 ```
 find /app/superset-frontend -name "node_modules" -type d -prune -exec rm -rf '{}' +
-
 ```

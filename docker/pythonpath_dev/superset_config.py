@@ -28,6 +28,9 @@ from flask_caching.backends.filesystemcache import FileSystemCache
 
 logger = logging.getLogger()
 
+# websocket
+# WEBSOCKET_URL = "ws://superset-websocket:8080/"
+
 LANGUAGES = {
     'zh': {'flag': 'cn', 'name': '中文'},
     'en': {'flag': 'us', 'name': 'English'},

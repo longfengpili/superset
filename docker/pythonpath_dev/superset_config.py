@@ -28,9 +28,6 @@ from flask_caching.backends.filesystemcache import FileSystemCache
 
 logger = logging.getLogger()
 
-# websocket
-# WEBSOCKET_URL = "ws://superset-websocket:8080/"
-
 LANGUAGES = {
     'zh': {'flag': 'cn', 'name': '中文'},
     'en': {'flag': 'us', 'name': 'English'},
@@ -82,7 +79,12 @@ DATA_CACHE_CONFIG = CACHE_CONFIG
 
 class CeleryConfig:
     broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_CELERY_DB}"
-    imports = ("superset.sql_lab",)
+    imports = (
+        "superset.sql_lab",
+        "superset.tasks.scheduler",
+        "superset.tasks.thumbnails",
+        "superset.tasks.cache",
+    )
     result_backend = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_RESULTS_DB}"
     worker_prefetch_multiplier = 1
     task_acks_late = False
@@ -109,7 +111,7 @@ ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
 WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl should be http://superset_app:8088/
 # The base URL for the email report hyperlinks.
 WEBDRIVER_BASEURL_USER_FRIENDLY = WEBDRIVER_BASEURL
-
+SQLLAB_CTAS_NO_LIMIT = True
 # 开启缩略图缓存
 THUMBNAIL_CACHE_CONFIG = {
     'CACHE_TYPE': 'redis',
@@ -120,8 +122,6 @@ THUMBNAIL_CACHE_CONFIG = {
     "CACHE_REDIS_PORT": REDIS_PORT,
     "CACHE_REDIS_DB": REDIS_RESULTS_DB,
 }
-
-SQLLAB_CTAS_NO_LIMIT = True
 
 #
 # Optionally import superset_config_docker.py (which will have been included on

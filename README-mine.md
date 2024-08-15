@@ -135,10 +135,48 @@ npm ERR! ENOTEMPTY: directory not empty, rename '/app/superset-frontend/plugins/
 find /app/superset-frontend -name "node_modules" -type d -prune -exec rm -rf '{}' +
 ```
 
-**6. 编译前端**
+**7. 编译前端**
 ```
 docker-compose -f docker-compose-company.yml superset-node up -d
 docker-compose exec -it superset-node bash
 cd /app/superset-frontend
 npm install
+```
+
+
+**8. 修改sql模板**
++ 文件路径`superset\jinja_context.py`
+```python
+def process_template(self, sql: str, **kwargs: Any) -> str:
+    """Processes a sql template
+
+    >>> sql = "SELECT '{{ datetime(2017, 1, 1).isoformat() }}'"
+    >>> process_template(sql)
+    "SELECT '2017-01-01T00:00:00'"
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"==502=={sql}")
+
+    def check_dttm(context):
+        from datetime import date, timedelta
+        today = date.today()
+        stoday = today.strftime('%Y-%m-%d')
+        syesterday = (today - timedelta(days=1)).strftime('%Y-%m-%d')
+        from_dttm = context.get('from_dttm')
+        logger.info(f"======{from_dttm}, {context}")
+        if not from_dttm:
+            context['from_dttm'] = syesterday
+            context['to_dttm'] = stoday
+            logger.info(f"update from_dttm to {syesterday}, to_dttm to {stoday}")
+        return context
+
+    template = self.env.from_string(sql)
+    kwargs.update(self._context)
+
+    context = validate_template_context(self.engine, kwargs)
+    check_dttm(context)
+    # logger.info(context.get('get_filters'))
+    return template.render(context)
+
 ```

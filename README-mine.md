@@ -134,3 +134,11 @@ npm ERR! ENOTEMPTY: directory not empty, rename '/app/superset-frontend/plugins/
 ```
 find /app/superset-frontend -name "node_modules" -type d -prune -exec rm -rf '{}' +
 ```
+
+**6. 编译前端**
+```
+docker-compose -f docker-compose-company.yml superset-node up -d
+docker-compose exec -it superset-node bash
+cd /app/superset-frontend
+npm install
+```

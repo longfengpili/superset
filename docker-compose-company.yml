@@ -35,7 +35,6 @@ x-superset-volumes: &superset-volumes
 
 x-common-build: &common-build
   context: .
-  dockerfile: Dockerfile_noqq
   target: dev
   cache_from:
     - apache/superset-cache:3.10-slim-bookworm
@@ -160,10 +159,10 @@ services:
     environment:
       # set this to false if you have perf issues running the npm i; npm run dev in-docker
       # if you do so, you have to run this manually on the host, which should perform better!
+      BUILD_SUPERSET_FRONTEND_IN_DOCKER: true
       SCARF_ANALYTICS: "${SCARF_ANALYTICS:-}"
-      BUILD_SUPERSET_FRONTEND_IN_DOCKER: false
     container_name: superset_node
-    command: ["/app/docker/docker-frontend-company.sh"]
+    command: ["/app/docker/docker-frontend.sh"]
     env_file:
       - path: docker/.env # default
         required: true
@@ -182,6 +181,8 @@ services:
         required: true
       - path: docker/.env-local # optional override
         required: false
+    environment:
+      CELERYD_CONCURRENCY: 2
     restart: unless-stopped
     depends_on: *superset-depends-on
     user: *superset-user
@@ -223,12 +224,15 @@ services:
         required: true
       - path: docker/.env-local # optional override
         required: false
+    profiles:
+      - optional
     environment:
       DATABASE_HOST: localhost
       DATABASE_DB: test
       REDIS_CELERY_DB: 2
       REDIS_RESULTS_DB: 3
       REDIS_HOST: localhost
+      CELERYD_CONCURRENCY: 8
     network_mode: host
     depends_on: *superset-depends-on
     user: *superset-user

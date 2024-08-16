@@ -125,13 +125,12 @@ THUMBNAIL_CACHE_CONFIG = {
 
 
 from datetime import datetime, timedelta
-def custom_dttm(dttm: datetime, default: str = None):
-    if dttm:
-        dttm = dttm.strftime('%Y-%m-%d')
-    elif default:
-        dttm = default
+def custom_dttm(dttm: str, default: str = None, shift: int = 0):
+    if dttm or default:
+        dttm = dttm or default
+        dttm = dttm[:10]
     else:
-        dttm = (datetime.today() - timedelta(days=6)).strftime('%Y-%m-%d')
+        dttm = (datetime.today() + timedelta(days=shift)).strftime('%Y-%m-%d')
     return dttm
 
 

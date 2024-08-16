@@ -83,39 +83,14 @@ FEATURE_FLAGS = {
 ```
 + sql使用例子
 ```sql
-with user_daily as(
-select
-date, part_date,
-role_id,
-level_min as level_min_daily, level_max as level_max_daily,
-viplevel_min as viplevel_min_daily, viplevel_max as viplevel_max_daily,
-money as money_daily,
-money_rmb as money_rmb_daily, exchange_rate
-from hive.warship_jp_w.dws_user_daily_di05
-where part_date >= '{{ from_dttm[:10] ro '2023-12-01' }}'
-and part_date <= '{{ to_dttm[:10] or'2023-12-07' }}'
-),
-
-user_daily_info as
-(select
-a.date, a.part_date,
-a.role_id,
-a.level_min_daily, a.level_max_daily,
-a.viplevel_min_daily, a.viplevel_max_daily,
-a.money_daily, a.money_rmb_daily, a.exchange_rate,
-b.install_date, date(b.lastlogin_ts) as lastlogin_date,
-b.moneyrmb_ac, b.firstpay_date, b.firstpay_goodid, b.firstpay_level,
-b.zone_id, b.channel,
-date_diff('day', b.install_date, a.date) as retention_day,
-date_diff('day', firstpay_date, a.date) as pay_retention_day,
-date_diff('day', b.install_date, firstpay_date) as firstpay_interval_days
-from user_daily a
-left join hive.warship_jp_w.dws_user_info_df05 b
-on a.role_id = b.role_id
+SELECT *
+FROM hive.huntress_jp_r.dwd_gserver_payment_live
+WHERE part_date >= '{{ from_dttm[:10] | default('2024-08-10', boolean=True) }}'
+AND part_date < '{{ to_dttm[:10] | default('2024-08-11', boolean=True) }}'
+and payment_itemid in (
+    {% set values = filter_values('payment_itemid') | default(('70001', '70002'), boolean=True) %}
+    {{ "'" + "', '".join(values) + "'" }}
 )
-
-select *
-from user_daily_info
 ```
 
 **5. superset-frontend编译错误**
@@ -142,7 +117,6 @@ docker-compose exec -it superset-node bash
 cd /app/superset-frontend
 npm install
 ```
-
 
 **8. 修改sql模板**
 + 文件路径`superset\jinja_context.py`
@@ -212,4 +186,10 @@ and name in (
     {{ custom_in(filter_values('name'), 'Aaron', 'Abigail')  }}
 )
 limit 10
+```
+
+** 8. 修改log格式 **
+在config文件中添加下面的内容
+```
+LOG_FORMAT = "%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(filename)s - %(lineno)d - %(message)s"
 ```

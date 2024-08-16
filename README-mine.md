@@ -180,3 +180,38 @@ def process_template(self, sql: str, **kwargs: Any) -> str:
     return template.render(context)
 
 ```
+
+** 8. 自定义jinja函数及调用 **
+```python
+from datetime import datetime, timedelta
+def custom_dttm(dttm: datetime, default: str = None):
+    if dttm:
+        dttm = dttm.strftime('%Y-%m-%d')
+    elif default:
+        dttm = default
+    else:
+        dttm = (datetime.today() - timedelta(days=6)).strftime('%Y-%m-%d')
+    return dttm
+
+
+def custom_in(filters: list, *default: tuple[str,]):
+    if not filters:
+        filters = default
+
+    return "'" + "', '".join(filters) + "'"
+
+
+JINJA_CONTEXT_ADDONS = {
+    'custom_dttm': custom_dttm,
+    'custom_in': custom_in,
+}
+```
+```sql
+SELECT *
+from public.birth_names 
+where ds >= '{{ custom_dttm(from_dttm, '2001-01-01') }}'
+and name in (
+    {{ custom_in(filter_values('name'), 'Aaron', 'Abigail')  }}
+)
+limit 10
+```

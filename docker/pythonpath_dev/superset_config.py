@@ -123,6 +123,30 @@ THUMBNAIL_CACHE_CONFIG = {
     "CACHE_REDIS_DB": REDIS_RESULTS_DB,
 }
 
+
+from datetime import datetime, timedelta
+def custom_dttm(dttm: datetime, default: str = None):
+    if dttm:
+        dttm = dttm.strftime('%Y-%m-%d')
+    elif default:
+        dttm = default
+    else:
+        dttm = (datetime.today() - timedelta(days=6)).strftime('%Y-%m-%d')
+    return dttm
+
+
+def custom_in(filters: list, *default: tuple[str,]):
+    if not filters:
+        filters = default
+
+    return "'" + "', '".join(filters) + "'"
+
+
+JINJA_CONTEXT_ADDONS = {
+    'custom_dttm': custom_dttm,
+    'custom_in': custom_in,
+}
+
 #
 # Optionally import superset_config_docker.py (which will have been included on
 # the PYTHONPATH) in order to allow for local settings to be overridden

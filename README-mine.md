@@ -191,5 +191,5 @@ limit 10
 ** 8. 修改log格式 **
 在config文件中添加下面的内容
 ```
-LOG_FORMAT = "%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(filename)s - %(lineno)d - %(message)s"
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(filename)s - %(lineno)d - %(message)s"
 ```

@@ -33,7 +33,7 @@ LANGUAGES = {
     'en': {'flag': 'us', 'name': 'English'},
 }
 
-LOG_FORMAT = "%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(filename)s - %(lineno)d - %(message)s"
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(filename)s - %(lineno)d - %(message)s"
 
 DATABASE_DIALECT = os.getenv("DATABASE_DIALECT")
 DATABASE_USER = os.getenv("DATABASE_USER")

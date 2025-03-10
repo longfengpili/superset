@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import json
 from textwrap import dedent
 from typing import Any
 
@@ -89,7 +90,7 @@ def test_validate_db_uri(mocker: MockerFixture) -> None:
 
     from superset.db_engine_specs.base import BaseEngineSpec
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         BaseEngineSpec.validate_database_uri(URL.create("sqlite"))
 
 
@@ -163,7 +164,9 @@ def test_get_column_spec(
     generic_type: GenericDataType,
     is_dttm: bool,
 ) -> None:
-    from superset.db_engine_specs.databricks import DatabricksNativeEngineSpec as spec
+    from superset.db_engine_specs.databricks import (
+        DatabricksNativeEngineSpec as spec,  # noqa: N813
+    )
 
     assert_column_spec(spec, native_type, sqla_type, attrs, generic_type, is_dttm)
 
@@ -223,7 +226,7 @@ def test_select_star(mocker: MockerFixture) -> None:
 
     # mock the database so we can compile the query
     database = mocker.MagicMock()
-    database.compile_sqla_query = lambda query: str(
+    database.compile_sqla_query = lambda query, catalog, schema: str(
         query.compile(dialect=sqlite.dialect())
     )
 
@@ -240,14 +243,7 @@ def test_select_star(mocker: MockerFixture) -> None:
         latest_partition=False,
         cols=cols,
     )
-    assert (
-        sql
-        == """SELECT
-  a
-FROM my_table
-LIMIT ?
-OFFSET ?"""
-    )
+    assert sql == "SELECT a\nFROM my_table\nLIMIT ?\nOFFSET ?"
 
     sql = NoLimitDBEngineSpec.select_star(
         database=database,
@@ -259,12 +255,7 @@ OFFSET ?"""
         latest_partition=False,
         cols=cols,
     )
-    assert (
-        sql
-        == """SELECT
-  a
-FROM my_table"""
-    )
+    assert sql == "SELECT a\nFROM my_table"
 
 
 def test_extra_table_metadata(mocker: MockerFixture) -> None:
@@ -333,4 +324,61 @@ def test_quote_table() -> None:
     assert (
         BaseEngineSpec.quote_table(Table("ta ble", "sche.ma", 'cata"log'), dialect)
         == '"cata""log"."sche.ma"."ta ble"'
+    )
+
+
+def test_mask_encrypted_extra() -> None:
+    """
+    Test that the private key is masked when the database is edited.
+    """
+    from superset.db_engine_specs.base import BaseEngineSpec
+
+    config = json.dumps(
+        {
+            "foo": "bar",
+            "service_account_info": {
+                "project_id": "black-sanctum-314419",
+                "private_key": "SECRET",
+            },
+        }
+    )
+
+    assert BaseEngineSpec.mask_encrypted_extra(config) == json.dumps(
+        {
+            "foo": "XXXXXXXXXX",
+            "service_account_info": "XXXXXXXXXX",
+        }
+    )
+
+
+def test_unmask_encrypted_extra() -> None:
+    """
+    Test that the private key can be reused from the previous `encrypted_extra`.
+    """
+    from superset.db_engine_specs.base import BaseEngineSpec
+
+    old = json.dumps(
+        {
+            "foo": "bar",
+            "service_account_info": {
+                "project_id": "black-sanctum-314419",
+                "private_key": "SECRET",
+            },
+        }
+    )
+    new = json.dumps(
+        {
+            "foo": "XXXXXXXXXX",
+            "service_account_info": "XXXXXXXXXX",
+        }
+    )
+
+    assert BaseEngineSpec.unmask_encrypted_extra(old, new) == json.dumps(
+        {
+            "foo": "bar",
+            "service_account_info": {
+                "project_id": "black-sanctum-314419",
+                "private_key": "SECRET",
+            },
+        }
     )

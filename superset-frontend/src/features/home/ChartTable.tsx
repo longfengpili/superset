@@ -18,7 +18,6 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { t } from '@superset-ui/core';
-import { filter } from 'lodash';
 import {
   useChartEditModal,
   useFavoriteStatus,
@@ -76,7 +75,7 @@ function ChartTable({
     TableTab.Other,
   );
 
-  const filteredOtherTabData = filter(otherTabData, obj => 'viz_type' in obj);
+  const filteredOtherTabData = otherTabData?.filter(obj => 'viz_type' in obj);
 
   const {
     state: { loading, resourceCollection: charts, bulkSelectEnabled },
@@ -171,12 +170,15 @@ function ChartTable({
   if (loading) return <LoadingCards cover={showThumbnails} />;
   return (
     <ErrorBoundary>
-      <PropertiesModal
-        onHide={closeChartEditModal}
-        onSave={handleChartUpdated}
-        show={sliceCurrentlyEditing}
-        slice={sliceCurrentlyEditing}
-      />
+      {sliceCurrentlyEditing && (
+        <PropertiesModal
+          onHide={closeChartEditModal}
+          onSave={handleChartUpdated}
+          show
+          slice={sliceCurrentlyEditing}
+        />
+      )}
+
       <SubMenu
         activeChild={activeTab}
         tabs={menuTabs}

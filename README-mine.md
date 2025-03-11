@@ -155,7 +155,9 @@ def process_template(self, sql: str, **kwargs: Any) -> str:
 
 ```
 
-** 9. 自定义jinja函数及调用 **
+
+**9. 自定义jinja函数及调用**
+
 ```python
 from datetime import datetime, timedelta
 def custom_dttm(dttm: str, default: str = None, shift: int = 0):
@@ -188,14 +190,14 @@ and name in (
 limit 10
 ```
 
-** 10. 修改log格式 **
+**10. 修改log格式**
 在config文件中添加下面的内容
 ```
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(filename)s - %(lineno)d - %(message)s"
 ```
 
 
-** 11. css属性 **
+**11. css属性**
 + 表格属性
 ```css
 table.table tbody tr td{
@@ -223,4 +225,10 @@ table.pvtTable thead tr th{
   vertical-align: middle !important; /* 垂直居中 */
   text-align: center !important; /* 水平居中 */
 }
+```
+
+**12. 修改后端时区**
+在配置文件中增加
+```
+os.environ['TZ'] = 'Asia/Shanghai'  # 例如，设置为上海时区
 ```

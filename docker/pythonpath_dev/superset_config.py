@@ -29,6 +29,8 @@ from flask_caching.backends.filesystemcache import FileSystemCache
 
 logger = logging.getLogger()
 
+os.environ['TZ'] = 'Asia/Shanghai'  # 例如，设置为上海时区
+
 LANGUAGES = {
     'zh': {'flag': 'cn', 'name': '中文'},
     'en': {'flag': 'us', 'name': 'English'},

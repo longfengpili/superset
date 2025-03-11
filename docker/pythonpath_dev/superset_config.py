@@ -22,11 +22,21 @@
 #
 import logging
 import os
+import sys
 
 from celery.schedules import crontab
 from flask_caching.backends.filesystemcache import FileSystemCache
 
 logger = logging.getLogger()
+
+os.environ['TZ'] = 'Asia/Shanghai'  # 例如，设置为上海时区
+
+LANGUAGES = {
+    'zh': {'flag': 'cn', 'name': '中文'},
+    'en': {'flag': 'us', 'name': 'English'},
+}
+
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(filename)s - %(lineno)d - %(message)s"
 
 DATABASE_DIALECT = os.getenv("DATABASE_DIALECT")
 DATABASE_USER = os.getenv("DATABASE_USER")
@@ -97,12 +107,64 @@ class CeleryConfig:
 
 CELERY_CONFIG = CeleryConfig
 
-FEATURE_FLAGS = {"ALERT_REPORTS": True}
+FEATURE_FLAGS = {
+    "ALERT_REPORTS": True,
+    "THUMBNAILS": True,  # 开启缩略图
+    "ENABLE_TEMPLATE_PROCESSING": True,  # 支持jinja
+}
 ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
-WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl should be http://superset_app:8088/
+WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl should be http://superset_app:8088/  # noqa: E501
 # The base URL for the email report hyperlinks.
 WEBDRIVER_BASEURL_USER_FRIENDLY = WEBDRIVER_BASEURL
 SQLLAB_CTAS_NO_LIMIT = True
+# 开启缩略图缓存
+THUMBNAIL_CACHE_CONFIG = {
+    'CACHE_TYPE': 'redis',
+    'CACHE_DEFAULT_TIMEOUT': 24 * 60 * 60,
+    'CACHE_KEY_PREFIX': 'thumbnail_',
+    'CACHE_NO_NULL_WARNING': True,
+    "CACHE_REDIS_HOST": REDIS_HOST,
+    "CACHE_REDIS_PORT": REDIS_PORT,
+    "CACHE_REDIS_DB": REDIS_RESULTS_DB,
+}
+
+
+from datetime import datetime, timedelta
+def custom_dttm(dttm: str, default: str = None, shift: int = 0):
+    if dttm or default:
+        dttm = dttm or default
+        dttm = dttm[:10]
+    else:
+        dttm = (datetime.today() + timedelta(days=shift)).strftime('%Y-%m-%d')
+    return dttm
+
+
+def custom_in(filters: list, *default: tuple[str,]):
+    if not filters:
+        filters = default
+
+    return "'" + "', '".join(filters) + "'"
+
+
+JINJA_CONTEXT_ADDONS = {
+    'custom_dttm': custom_dttm,
+    'custom_in': custom_in,
+}
+
+log_level_text = os.getenv("SUPERSET_LOG_LEVEL", "INFO")
+LOG_LEVEL = getattr(logging, log_level_text.upper(), logging.INFO)
+
+if os.getenv("CYPRESS_CONFIG") == "true":
+    # When running the service as a cypress backend, we need to import the config
+    # located @ tests/integration_tests/superset_test_config.py
+    base_dir = os.path.dirname(__file__)
+    module_folder = os.path.abspath(
+        os.path.join(base_dir, "../../tests/integration_tests/")
+    )
+    sys.path.insert(0, module_folder)
+    from superset_test_config import *  # noqa
+
+    sys.path.pop(0)
 
 #
 # Optionally import superset_config_docker.py (which will have been included on
@@ -113,7 +175,7 @@ try:
     from superset_config_docker import *  # noqa
 
     logger.info(
-        f"Loaded your Docker configuration at " f"[{superset_config_docker.__file__}]"
+        f"Loaded your Docker configuration at [{superset_config_docker.__file__}]"
     )
 except ImportError:
     logger.info("Using default Docker config...")

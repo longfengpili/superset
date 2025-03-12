@@ -106,7 +106,13 @@ npm ERR! ENOTEMPTY: directory not empty, rename '/app/superset-frontend/plugins/
 + 删除/app/superset-frontend/plugins/plugin-chart-handlebars/node_modules
 
 **6. 批量删除node_modules**
-```
+```bash
+# 使用 `\;`（逐个执行）
+# 对每个 `node_modules` 文件夹，`find` 会分别执行 `echo` 和 `rm -rf` 命令。
+find /app/superset-frontend -name "node_modules" -type d -prune -exec sh -c 'echo "Deleting: {}"; rm -rf "{}"' \;
+
+# 使用 `+`（批量执行）
+# `find` 会一次性将所有 `node_modules` 文件夹传递给 `rm -rf`，从而提高效率。
 find /app/superset-frontend -name "node_modules" -type d -prune -exec rm -rf '{}' +
 ```
 

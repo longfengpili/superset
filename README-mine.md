@@ -238,3 +238,10 @@ table.pvtTable thead tr th{
 ```
 os.environ['TZ'] = 'Asia/Shanghai'  # 例如，设置为上海时区
 ```
+
+**12. 不加载例子**
+在.env中增加
+```
+# not load examples
+SUPERSET_LOAD_EXAMPLES=no
+```

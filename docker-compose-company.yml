@@ -199,7 +199,8 @@ services:
       - path: docker/.env-local # optional override
         required: false
     environment:
-      CELERYD_CONCURRENCY: 2
+      CELERYD_CONCURRENCY: 16
+      TEST: longfengpili
       CYPRESS_CONFIG: "${CYPRESS_CONFIG:-}"
       SUPERSET_LOG_LEVEL: "${SUPERSET_LOG_LEVEL:-info}"
     restart: unless-stopped

@@ -239,9 +239,75 @@ table.pvtTable thead tr th{
 os.environ['TZ'] = 'Asia/Shanghai'  # 例如，设置为上海时区
 ```
 
-**12. 不加载例子**
+**13. 不加载例子**
 在.env中增加
 ```
 # not load examples
 SUPERSET_LOAD_EXAMPLES=no
+```
+
+
+**15. superset cache time order**
+
++ Path: `f:\github\docker\superset\superset\common\query_context.py::class QueryContext::get_cache_timeout`
+
++ Order:
+    <!-- + custom_cache_timeout -->
+    + slice_.cache_timeout
+    + datasource.cache_timeo
+    + datasource.database.cache_timeout
+    + config::CACHE_DEFAULT_TIMEOUT
+
+**16. superset cache [api](http://localhost:8088/swagger/v1)**
+```python
+import requests
+
+# 1. 创建会话对象保持cookie
+session = requests.Session()
+
+# 2. 获取访问令牌
+auth_url = "http://localhost:8088/api/v1/security/login"
+response = session.post(
+    auth_url,
+    json={
+        "username": "test",
+        "password": "test",
+        "provider": "db"
+    }
+)
+
+response.json()
+access_token = response.json()["access_token"]
+
+# 3. 获取 CSRF token
+csrf_response = session.get(
+    "http://localhost:8088/api/v1/security/csrf_token/",
+    headers={"Authorization": f"Bearer {access_token}"}
+)
+
+csrf_response.json()
+csrf_token = csrf_response.json()["result"]
+
+# 4. 准备请求头和参数
+headers = {
+    "Authorization": f"Bearer {access_token}",
+    "X-CSRFToken": csrf_token,
+    "Content-Type": "application/json",
+}
+
+payload = {
+    'chart_id': 122,
+    'dashboard_id': 69
+}
+
+# 5. 发送请求 (注意使用json参数而不是data)
+refresh_url = "http://localhost:8088/api/v1/chart/warm_up_cache"
+response = session.put(  # 使用POST而不是PUT
+    refresh_url,
+    headers=headers,
+    json=payload  # 使用json参数自动序列化
+)
+
+
+response.json()
 ```

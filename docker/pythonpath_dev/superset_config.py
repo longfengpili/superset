@@ -87,12 +87,23 @@ class CeleryConfig:
     imports = (
         "superset.sql_lab",
         "superset.tasks.scheduler",
-        "superset.tasks.thumbnails",
-        "superset.tasks.cache",
+        "superset.tasks.cache",      # 缓存相关任务
+        "superset.tasks.thumbnails", # 缩略图生成
     )
     result_backend = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_RESULTS_DB}"
-    worker_prefetch_multiplier = 1
-    task_acks_late = False
+    worker_prefetch_multiplier = 5 # 控制每个 worker 预取任务的数量（并发数 × 此系数）
+    task_acks_late = True # 任务执行完成才确认，避免崩溃时丢失
+    task_reject_on_worker_lost = True # worker 崩溃时自动重新排队
+    task_track_started = True # 记录任务开始时间用于监控
+    task_annotations = {
+        "sql_lab.get_sql_results": {
+            "rate_limit": "50/s",  # 每秒最多50个查询
+            "time_limit": 300,     # 5分钟超时
+        },
+        "reports.send": {
+            "rate_limit": "10/m",  # 每分钟最多10份报表
+        }
+    }
     beat_schedule = {
         "reports.scheduler": {
             "task": "reports.scheduler",
@@ -102,8 +113,16 @@ class CeleryConfig:
             "task": "reports.prune_log",
             "schedule": crontab(minute=10, hour=0),
         },
+        "cache-warmup-hourly": {
+            "task": "cache-warmup",
+            "schedule": crontab(minute="*/3", hour="*"),
+            "kwargs": {
+                "strategy_name": "top_n_dashboards",
+                "top_n": 2,
+                "since": "7 days ago",
+            },
+        },
     }
-
 
 CELERY_CONFIG = CeleryConfig
 

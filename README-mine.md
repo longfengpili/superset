@@ -166,13 +166,11 @@ def process_template(self, sql: str, **kwargs: Any) -> str:
 
 ```python
 from datetime import datetime, timedelta
-def custom_dttm(dttm: str, default: str = None, shift: int = 0):
-    if dttm or default:
-        dttm = dttm or default
-        dttm = dttm[:10]
-    else:
-        dttm = (datetime.today() + timedelta(days=shift)).strftime('%Y-%m-%d')
+def custom_dttm(dttm: str, shift_default: int = 0, shift: int = 0):
+    dttm = datetime.strptime(dttm[:10], '%Y-%m-%d') if dttm else datetime.today() + timedelta(days=shift_default)
+    dttm = (dttm + timedelta(days=shift)).strftime('%Y-%m-%d')
     return dttm
+
 
 def custom_in(filters: list, *default: tuple[str,]):
     if not filters:

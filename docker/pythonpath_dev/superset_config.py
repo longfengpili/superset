@@ -29,6 +29,11 @@ from flask_caching.backends.filesystemcache import FileSystemCache
 
 logger = logging.getLogger()
 
+HTTP_HEADERS = {'X-Frame-Options': '*'}  # 或指定具体域名
+ENABLE_CORS = True
+
+
+
 os.environ['TZ'] = 'Asia/Shanghai'  # 例如，设置为上海时区
 
 LANGUAGES = {
@@ -149,15 +154,19 @@ THUMBNAIL_CACHE_CONFIG = {
 
 
 from datetime import datetime, timedelta
-def custom_dttm(dttm: str, shift_default: int = 0, shift: int = 0):
-    dttm = datetime.strptime(dttm[:10], '%Y-%m-%d') if dttm else datetime.today() + timedelta(days=shift_default)
-    dttm = (dttm + timedelta(days=shift)).strftime('%Y-%m-%d')
+def custom_dttm(dttm: str, shift_default: int = 0, shift: int = 0, dtty: str = None):
+    if dttm:
+        dttm = datetime.strptime(dttm, '%Y-%m-%dT%H:%M:%S')
+
+    dttm = dttm if dttm else datetime.today() + timedelta(days=shift_default)
+    tformat = '%Y-%m-%d %H:%M:%S' if dtty == 'time' else '%Y-%m-%d'
+    dttm = (dttm + timedelta(days=shift)).strftime(tformat)
     return dttm
 
 
 def custom_in(filters: list, *default: tuple[str,]):
     if not filters:
-        filters = default
+        filters = default or ['all']
 
     return "'" + "', '".join(filters) + "'"
 

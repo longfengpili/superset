@@ -198,6 +198,16 @@ and name in (
 limit 10
 ```
 
+```sql
+# 默认选择所有
+SELECT *
+from public.birth_names 
+where ds >= '{{ custom_dttm(from_dttm, shift=0) }}'
+and ((name = case when concat({{ custom_in(filter_values('name', 'all'))}}, '') = 'all' then name else null end) 
+or name in ({{ custom_in(filter_values('name', 'all'))}}))
+limit 10
+```
+
 **10. 修改log格式**
 在config文件中添加下面的内容
 ```

@@ -29,11 +29,6 @@ from flask_caching.backends.filesystemcache import FileSystemCache
 
 logger = logging.getLogger()
 
-HTTP_HEADERS = {'X-Frame-Options': '*'}  # 或指定具体域名
-ENABLE_CORS = True
-
-
-
 os.environ['TZ'] = 'Asia/Shanghai'  # 例如，设置为上海时区
 
 LANGUAGES = {

@@ -57,6 +57,44 @@ const RetentionTableWrapper = styled.div`
   height: 100%;
   max-width: inherit;
   overflow: auto;
+  th.retention-table-call{
+    text-align: center !important;
+    font-weight: bold !important;
+  }
+
+  td.retention-table-call {
+    min-width: 128px;
+    height: 36px;
+    font-size: 12px !important;
+    padding: 0px !important;
+    text-align: center !important;
+    &.dimension {
+      padding: 0 10px !important;
+      text-align: left !important;
+    }
+    &.period{
+      text-align: right !important;
+    }
+  }
+
+  td.retention-table-call div {
+    display: inline-block;
+    width: 100%;
+    height: 36px;
+    padding: 0 10px;
+    line-height: 34px;
+
+    p {
+      margin: 0;
+      padding: 0;
+      height: 17px;
+      line-height: 17px;
+    }
+
+    p:last-child {
+      font-size: 11px;
+    }
+  }
 `;
 
 export default function RetentionTable(props: RetentionTableProps) {

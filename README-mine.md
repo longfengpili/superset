@@ -42,6 +42,14 @@ under the License.
 
 A modern, enterprise-ready business intelligence web application.
 
+## installs
+```bash
+git clone git@github.com:longfengpili/superset.git
+cd superset
+git checkout c4.1.2
+docker-compose -f docker-compose-company.yml up -d
+```
+
 ## Questions
 **1. 增加中文**  
 在`./docker/pythonpath_dev/superset_config.py`中增加配置内容。

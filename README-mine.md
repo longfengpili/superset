@@ -323,3 +323,9 @@ response = session.put(  # 使用POST而不是PUT
 
 response.json()
 ```
+
+**17. 增加retention_table**  
+`superset-frontend/plugins/plugin-chart-retention-table`
+
+**18. 增加dashboars examples**  
+`dashboards`
